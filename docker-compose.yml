@@ -1,0 +1,38 @@
+services:
+  # Your existing API service
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - chromadb
+      - ollama
+
+  # NEW: The Streamlit UI service
+  ui:
+    build: .
+    # Overrides the default Uvicorn command in the Dockerfile
+    command: streamlit run ui.py --server.port 8501 --server.address 0.0.0.0
+    ports:
+      - "8501:8501"
+    depends_on:
+      - api
+
+  # Your existing ChromaDB service
+  chromadb:
+    image: chromadb/chroma:latest
+    volumes:
+      - chroma_data:/chroma/chroma
+    expose:
+      - "8000"
+
+  # Your existing Ollama service
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ~/.ollama:/root/.ollama
+
+volumes:
+  chroma_data:
